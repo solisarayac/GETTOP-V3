@@ -25,32 +25,67 @@ const RegisterScreen: React.FC = () => {
   const [emailError, setEmailError] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
   const [confirmError, setConfirmError] = useState<string>('');
+  const [conditions, setConditions] = useState({
+    length: false,
+    upper: false,
+    lower: false,
+    number: false,
+    symbol: false,
+  });
 
   const { register } = useAuth();
   const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
 
   const validatePassword = (pass: string) => {
-    const hasUpperCase = /[A-Z]/.test(pass);
-    const hasLowerCase = /[a-z]/.test(pass);
+    const conditionsState = {
+      length: pass.length >= 8,
+      upper: /[A-Z]/.test(pass),
+      lower: /[a-z]/.test(pass),
+      number: /\d/.test(pass),
+      symbol: /[!@#$%^&*(),.?":{}|<>]/.test(pass),
+    };
 
-    if (!hasUpperCase || !hasLowerCase) {
-      setPasswordError('La contraseña debe contener mayúsculas y minúsculas.');
+    setConditions(conditionsState);
+
+    const allValid = Object.values(conditionsState).every(Boolean);
+
+    if (!allValid) {
+      setPasswordError('La contraseña no cumple con todos los requisitos.');
       return false;
     }
+
     setPasswordError('');
     return true;
   };
 
   const handleRegister = async () => {
-    if (!user) { setUserError('El nombre de usuario es requerido.'); return; } else { setUserError(''); }
-    if (!email) { setEmailError('El correo electrónico es requerido.'); return; } else { setEmailError(''); }
-    
-    if (password !== confirmPassword) { setConfirmError('Las contraseñas no coinciden.'); return; } else { setConfirmError(''); }
+    if (!user) {
+      setUserError('El nombre de usuario es requerido.');
+      return;
+    } else {
+      setUserError('');
+    }
 
-    if (!validatePassword(password)) { return; }
+    if (!email) {
+      setEmailError('El correo electrónico es requerido.');
+      return;
+    } else {
+      setEmailError('');
+    }
+
+    if (password !== confirmPassword) {
+      setConfirmError('Las contraseñas no coinciden.');
+      return;
+    } else {
+      setConfirmError('');
+    }
+
+    if (!validatePassword(password)) {
+      return;
+    }
 
     const newUser = { user, email, password };
-    const result = await register(newUser); // Llama a la función y obtiene el resultado
+    const result = await register(newUser);
 
     if (result.success) {
       setSuccesMessage(result.message);
@@ -66,7 +101,7 @@ const RegisterScreen: React.FC = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.content}>
           <GETTOP width={200} height={50} style={styles.logo} />
-          
+
           <TextInput
             style={styles.input}
             placeholder="Nombre de usuario"
@@ -99,7 +134,31 @@ const RegisterScreen: React.FC = () => {
               validatePassword(text);
             }}
           />
-          {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+
+          {passwordError ? (
+            <Text style={styles.errorText}>{passwordError}</Text>
+          ) : null}
+
+          {/* Indicadores visuales de requisitos */}
+          {password.length > 0 && (
+            <View style={{ marginTop: 8, marginBottom: 12 }}>
+              <Text style={{ color: conditions.length ? '#00C851' : '#FF4444' }}>
+                • Mínimo 8 caracteres
+              </Text>
+              <Text style={{ color: conditions.upper ? '#00C851' : '#FF4444' }}>
+                • Al menos una mayúscula
+              </Text>
+              <Text style={{ color: conditions.lower ? '#00C851' : '#FF4444' }}>
+                • Al menos una minúscula
+              </Text>
+              <Text style={{ color: conditions.number ? '#00C851' : '#FF4444' }}>
+                • Al menos un número
+              </Text>
+              <Text style={{ color: conditions.symbol ? '#00C851' : '#FF4444' }}>
+                • Al menos un símbolo (!@#$%)
+              </Text>
+            </View>
+          )}
 
           <TextInput
             style={styles.input}
@@ -124,11 +183,9 @@ const RegisterScreen: React.FC = () => {
           </TouchableOpacity>
 
           <View style={styles.textContainer}>
-            <Text style={styles.text}>
-              ¿Ya tienes cuenta?{" "}
-            </Text>
+            <Text style={styles.text}>¿Ya tienes cuenta? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.linkText}>Inicia sésion</Text>
+              <Text style={styles.linkText}>Inicia sesión</Text>
             </TouchableOpacity>
           </View>
         </View>
