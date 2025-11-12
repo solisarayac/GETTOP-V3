@@ -1,4 +1,4 @@
- // src/screens/Chatbot/TitiScreen.tsx
+// src/screens/Chatbot/TitiScreen.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import styles from './styles';
-import SendIcon from '../../assets/svg/send.svg'; // tu SVG de enviar
+import SendIcon from '../../assets/svg/send.svg';
 import { Palette } from '../../constants/Colors';
 
 interface Message {
@@ -23,8 +23,9 @@ interface Message {
 const TitiScreen = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!inputText.trim()) return;
 
     const newMessage: Message = {
@@ -35,28 +36,13 @@ const TitiScreen = () => {
 
     setMessages(prev => [...prev, newMessage]);
     setInputText('');
-
-    // Respuesta simulada de Titi 🐒
-    setTimeout(() => {
-      const titiReply: Message = {
-        id: (Date.now() + 1).toString(),
-        text: generateTitiResponse(inputText),
-        sender: 'titi',
-      };
-      setMessages(prev => [...prev, titiReply]);
-    }, 800);
-  };
-
-  const generateTitiResponse = (text: string) => {
-    const lower = text.toLowerCase();
-    if (lower.includes('hola')) return '¡Holaaa bro! 🐒 ¿Cómo va todo?';
-    if (lower.includes('ayuda')) return 'Claro bro, contame qué ocupás 👀';
-    if (lower.includes('gracias')) return 'De nada bro, Titi siempre al tiro 🔥';
-    return 'Hmm interesante... contame más 👀';
-  };
+    setLoading(true);
 
   return (
-    <LinearGradient colors={[Palette.secondary, Palette.thirdAux]} style={styles.container}>
+    <LinearGradient
+      colors={['#FFFFFF', Palette.secondary, Palette.thirdAux]} // degradado arriba a blanco
+      style={styles.container}
+    >
       <KeyboardAvoidingView
         style={styles.inner}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -86,14 +72,16 @@ const TitiScreen = () => {
             onChangeText={setInputText}
             placeholder="Escribí algo..."
             placeholderTextColor={Palette.lightGray}
+            editable={!loading}
           />
-          <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+          <TouchableOpacity onPress={handleSend} style={styles.sendButton} disabled={loading}>
             <SendIcon width={24} height={24} />
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
     </LinearGradient>
   );
+}
 };
 
 export default TitiScreen;
