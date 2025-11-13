@@ -15,6 +15,7 @@ import PlusAct from '../assets/svg/plusAct.svg';
 import VideoBlack from '../assets/svg/videoBlack.svg';
 import Profiles from '../assets/svg/profile.svg';
 import ProfileAct from '../assets/svg/ProfileAct.svg';
+import Monkey from '../assets/svg/monkeyBot.svg';
 import { Palette } from '../constants/Colors';
 import { FontSizes } from '../constants/FontSizes';
 import { Alert, Text } from 'react-native';
@@ -25,7 +26,7 @@ const ICONS = {
   Inicio: { active: HomeAct, inactive: Home, onWhite: HomeBlack },
   Crear: { active: PlusAct, inactive: Video, onWhite: VideoBlack },
   Perfil: { active: ProfileAct, inactive: Profiles, onWhite: ProfileAct },
-  Titi: { active: PlusAct, inactive: Video, onWhite: VideoBlack }, // Puedes cambiar icono
+  Titi: { active: Monkey, inactive: Monkey, onWhite: Monkey }, 
 } as const;
 
 const UserNavigator = () => {

@@ -1,4 +1,4 @@
- // src/screens/Chatbot/TitiScreen.tsx
+// src/screens/Chatbot/TitiScreen.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -11,8 +11,9 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import styles from './styles';
-import SendIcon from '../../assets/svg/send.svg'; // tu SVG de enviar
+import SendIcon from '../../assets/svg/send.svg';
 import { Palette } from '../../constants/Colors';
+import { sendMessageToTiti } from '../../services/TitiService';
 
 interface Message {
   id: string;
@@ -23,8 +24,9 @@ interface Message {
 const TitiScreen = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!inputText.trim()) return;
 
     const newMessage: Message = {
@@ -35,24 +37,29 @@ const TitiScreen = () => {
 
     setMessages(prev => [...prev, newMessage]);
     setInputText('');
+    setLoading(true);
 
-    // Respuesta simulada de Titi 🐒
-    setTimeout(() => {
+    try {
+      const titiResponse = await sendMessageToTiti(inputText);
+
       const titiReply: Message = {
         id: (Date.now() + 1).toString(),
-        text: generateTitiResponse(inputText),
+        text: titiResponse.answer,
         sender: 'titi',
       };
-      setMessages(prev => [...prev, titiReply]);
-    }, 800);
-  };
 
-  const generateTitiResponse = (text: string) => {
-    const lower = text.toLowerCase();
-    if (lower.includes('hola')) return '¡Holaaa bro! 🐒 ¿Cómo va todo?';
-    if (lower.includes('ayuda')) return 'Claro bro, contame qué ocupás 👀';
-    if (lower.includes('gracias')) return 'De nada bro, Titi siempre al tiro 🔥';
-    return 'Hmm interesante... contame más 👀';
+      setMessages(prev => [...prev, titiReply]);
+    } catch (error) {
+      console.error(error);
+      const errorReply: Message = {
+        id: (Date.now() + 2).toString(),
+        text: 'Oops, Titi está durmiendo 😴. Intentá de nuevo.',
+        sender: 'titi',
+      };
+      setMessages(prev => [...prev, errorReply]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -86,8 +93,9 @@ const TitiScreen = () => {
             onChangeText={setInputText}
             placeholder="Escribí algo..."
             placeholderTextColor={Palette.lightGray}
+            editable={!loading}
           />
-          <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+          <TouchableOpacity onPress={handleSend} style={styles.sendButton} disabled={loading}>
             <SendIcon width={24} height={24} />
           </TouchableOpacity>
         </View>
